@@ -1,0 +1,31 @@
+﻿
+Microsoft Visual Studio Solution File, Format Version 12.00
+# Visual Studio Version 17
+VisualStudioVersion = 17.2.32630.192
+MinimumVisualStudioVersion = 10.0.40219.1
+Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "UnrealMappingsDumper", "UnrealMappingsDumper\UnrealMappingsDumper.vcxproj", "{578A215C-4E2C-4B71-8EDE-F5F801572113}"
+EndProject
+Global
+	GlobalSection(SolutionConfigurationPlatforms) = preSolution
+		Debug|x64 = Debug|x64
+		Debug|x86 = Debug|x86
+		Release|x64 = Release|x64
+		Release|x86 = Release|x86
+	EndGlobalSection
+	GlobalSection(ProjectConfigurationPlatforms) = postSolution
+		{578A215C-4E2C-4B71-8EDE-F5F801572113}.Debug|x64.ActiveCfg = Debug|x64
+		{578A215C-4E2C-4B71-8EDE-F5F801572113}.Debug|x64.Build.0 = Debug|x64
+		{578A215C-4E2C-4B71-8EDE-F5F801572113}.Debug|x86.ActiveCfg = Debug|Win32
+		{578A215C-4E2C-4B71-8EDE-F5F801572113}.Debug|x86.Build.0 = Debug|Win32
+		{578A215C-4E2C-4B71-8EDE-F5F801572113}.Release|x64.ActiveCfg = Release|x64
+		{578A215C-4E2C-4B71-8EDE-F5F801572113}.Release|x64.Build.0 = Release|x64
+		{578A215C-4E2C-4B71-8EDE-F5F801572113}.Release|x86.ActiveCfg = Release|Win32
+		{578A215C-4E2C-4B71-8EDE-F5F801572113}.Release|x86.Build.0 = Release|Win32
+	EndGlobalSection
+	GlobalSection(SolutionProperties) = preSolution
+		HideSolutionNode = FALSE
+	EndGlobalSection
+	GlobalSection(ExtensibilityGlobals) = postSolution
+		SolutionGuid = {0DA23566-1754-4C64-ACC9-1F6BC0912A87}
+	EndGlobalSection
+EndGlobal
