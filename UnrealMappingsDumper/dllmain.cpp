@@ -1,8 +1,20 @@
 #include "pch.h"
 
+#include "app.h"
+
 void WINAPI Main()
 {
-	
+	auto App = CreateAppInstance(EUnrealVersion::UE5_01);
+
+	if (!App)
+	{
+		UE_LOG("Couldn't instantiate dumper instance. Returning.");
+		return;
+	}
+
+
+
+	delete App;
 }
 
 BOOL APIENTRY DllMain(
