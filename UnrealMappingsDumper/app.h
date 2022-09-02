@@ -10,7 +10,7 @@ enum class EUnrealVersion
 	UE5_01
 };
 
-static IDumper* CreateAppInstance(EUnrealVersion Version);
+IDumper* CreateAppInstance(EUnrealVersion Version);
 
 static void UE_LOG(const char* str, ...)
 {

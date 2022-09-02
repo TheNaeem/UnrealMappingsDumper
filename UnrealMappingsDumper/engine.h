@@ -2,7 +2,9 @@
 
 #include "uobjectDependency.h"
 #include "unrealEnums.h"
-#include "unrealTemplateCore.h"
+#include "unrealContainers.h"
+
+typedef int FThreadSafeCounter;
 
 template <typename UObjectBase = UObjectDependency>
 class DefaultEngine
@@ -32,14 +34,70 @@ public:
 
 	public:
 
-		FORCEINLINE UField* Next()
+		FORCEINLINE UField* GetNext()
 		{
 			return Next;
 		}
 	};
 
+	class FFieldClass
+	{
+		UObjectBase::FName Name;
+		uint64_t Id;
+		uint64_t CastFlags;
+		EClassFlags ClassFlags;
+		FFieldClass* SuperClass;
+		class FField* DefaultObject;
+		class FField* (*ConstructFn)(class FFieldVariant&, UObjectBase::FName&, EObjectFlags);
+		FThreadSafeCounter UnqiueNameIndexCounter;
+
+	public:
+
+		inline std::string GetName() const
+		{
+			return Name.ToString();
+		}
+
+		inline UObjectBase::FName GetFName() const
+		{
+			return Name;
+		}
+
+		inline uint64_t GetId() const
+		{
+			return Id;
+		}
+
+		inline uint64_t GetCastFlags() const
+		{
+			return CastFlags;
+		}
+
+		inline bool HasAnyCastFlags(const uint64_t InCastFlags) const
+		{
+			return !!(CastFlags & InCastFlags);
+		}
+
+		inline bool HasAllCastFlags(const uint64_t InCastFlags) const
+		{
+			return (CastFlags & InCastFlags) == InCastFlags;
+		}
+	};
+
+	class FFieldVariant
+	{
+		union FFieldObjectUnion
+		{
+			class FField* Field;
+			UObject* Object;
+		}Container;
+
+		bool bIsUObject;
+	};
+
 	class FField
 	{
+		void* Vtbl;
 		FFieldClass* ClassPrivate;
 		FFieldVariant Owner;
 		FField* Next;
@@ -48,7 +106,7 @@ public:
 
 	public:
 
-		FORCEINLINE FField* Next()
+		FORCEINLINE FField* GetNext()
 		{
 			return Next;
 		}
@@ -67,6 +125,24 @@ public:
 		{
 			return GetClass()->GetCastFlags();
 		}
+	};
+
+	class FProperty : public FField
+	{
+		int32_t	ArrayDim;
+		int32_t	ElementSize;
+		EPropertyFlags PropertyFlags;
+		uint16_t RepIndex;
+		TEnumAsByte<ELifetimeCondition> BlueprintReplicationCondition;
+		int32_t Offset_Internal;
+
+	public:
+
+		UObjectBase::FName RepNotifyFunc;
+		FProperty* PropertyLinkNext;
+		FProperty* NextRef;
+		FProperty* DestructorLinkNext;
+		FProperty* PostConstructLinkNext;
 	};
 
 	class UStruct : public UField
@@ -88,14 +164,37 @@ public:
 		FProperty* PostConstructLink;
 		TArray<UObject*> ScriptAndPropertyObjectReferences;
 
-		__forceinline UStruct* Super()
+		FORCEINLINE UStruct* Super()
 		{
 			return SuperStruct;
 		}
 	};
+
+	class UClass : public UStruct
+	{
+		typedef void (*ClassConstructorType)(const class FObjectInitializer&);
+		typedef UObject* (*ClassVTableHelperCtorCallerType)(class FVTableHelper& Helper);
+		typedef UClass* (*StaticClassFunctionType)();
+
+	public:
+
+		ClassConstructorType ClassConstructor;
+		ClassVTableHelperCtorCallerType ClassVTableHelperCtorCaller;
+		void* CppClassStaticFunctions;
+		mutable int32_t ClassUnique;
+		int32_t FirstOwnedClassRep = 0;
+		bool bCooked;
+		bool bLayoutChanging;
+		EClassFlags ClassFlags;
+		EClassCastFlags ClassCastFlags;
+		UClass* ClassWithin;
+		UObjectBase::FName ClassConfigName;
+		TUndefinedArray ClassReps;
+		TArray<UField*> NetFields;
+	};
 };
 
-class Engine_UE5_01 : public DefaultEngine<>
+class Engine_UE5 : public DefaultEngine<>
 {
 public:
 

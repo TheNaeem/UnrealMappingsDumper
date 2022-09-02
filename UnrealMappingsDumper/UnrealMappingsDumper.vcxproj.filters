@@ -48,7 +48,10 @@
     <ClInclude Include="unrealEnums.h">
       <Filter>Core\Engine</Filter>
     </ClInclude>
-    <ClInclude Include="unrealTemplateCore.h">
+    <ClInclude Include="unrealContainers.h">
+      <Filter>Core\Engine</Filter>
+    </ClInclude>
+    <ClInclude Include="unrealFunctions.h">
       <Filter>Core\Engine</Filter>
     </ClInclude>
   </ItemGroup>

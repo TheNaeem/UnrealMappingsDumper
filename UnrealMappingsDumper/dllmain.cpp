@@ -4,7 +4,7 @@
 
 void WINAPI Main()
 {
-	auto App = CreateAppInstance(EUnrealVersion::UE5_01);
+	auto App = CreateAppInstance(EUnrealVersion::UE5);
 
 	if (!App)
 	{

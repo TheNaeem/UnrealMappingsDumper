@@ -1,15 +1,17 @@
 #pragma once
 
 template <class T>
-struct TArray
+class TArray
 {
-	T* Data;
+	T* Buffer;
 	int32_t ArrayNum;
 	int32_t ArrayMax;
 
+public:
+
 	TArray()
 	{
-		Data = nullptr;
+		Buffer = nullptr;
 		ArrayNum = 0;
 		ArrayMax = 0;
 	}
@@ -21,9 +23,19 @@ struct TArray
 
 	FORCEINLINE T& operator[](int i)
 	{
-		return Data[i];
+		return Buffer[i];
 	};
+
+	FORCEINLINE T* Data()
+	{
+		return Buffer;
+	}
 };
+
+/// <summary>
+/// When you don't care about the type of a TArray just use this.
+/// </summary>
+typedef TArray<uint8_t> TUndefinedArray;
 
 template<class TEnum>
 class TEnumAsByte
@@ -39,11 +51,11 @@ public:
 		: Value(static_cast<uint8_t>(InValue))
 	{ }
 
-	explicit FORCEINLINE TEnumAsByte(int32 InValue)
-		: Value(static_cast<uint8>(InValue))
+	explicit FORCEINLINE TEnumAsByte(int32_t InValue)
+		: Value(static_cast<uint8_t>(InValue))
 	{ }
 
-	explicit FORCEINLINE TEnumAsByte(uint8 InValue)
+	explicit FORCEINLINE TEnumAsByte(uint8_t InValue)
 		: Value(InValue)
 	{ }
 
@@ -74,4 +86,8 @@ public:
 private:
 
 	uint8_t Value;
+};
+
+class FString : public TArray<wchar_t>
+{
 };
