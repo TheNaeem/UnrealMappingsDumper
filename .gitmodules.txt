@@ -1,3 +1,0 @@
-[submodule "Nightwatcher/CUE4Parse"]
-	path = UnrealMappingsDumper/Dependencies/Memcury
-	url = https://github.com/kem0x/Memcury.git
