@@ -25,6 +25,9 @@
     <Filter Include="Core\Engine">
       <UniqueIdentifier>{f78cd74e-242e-4f1b-bb2e-390488c8a504}</UniqueIdentifier>
     </Filter>
+    <Filter Include="Core\Scanning">
+      <UniqueIdentifier>{ef119be4-93c6-4dcf-9fbf-69b2325ffdbb}</UniqueIdentifier>
+    </Filter>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="framework.h">
@@ -54,6 +57,9 @@
     <ClInclude Include="unrealFunctions.h">
       <Filter>Core\Engine</Filter>
     </ClInclude>
+    <ClInclude Include="scanning.h">
+      <Filter>Core\Scanning</Filter>
+    </ClInclude>
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="dllmain.cpp">
@@ -67,6 +73,9 @@
     </ClCompile>
     <ClCompile Include="engine.cpp">
       <Filter>Core\Engine</Filter>
+    </ClCompile>
+    <ClCompile Include="scanning.cpp">
+      <Filter>Core\Scanning</Filter>
     </ClCompile>
   </ItemGroup>
 </Project>

@@ -6,4 +6,5 @@
 #include <stdio.h>
 #include <cstdint>
 #include <string>
+#include <functional>
 #include "../Dependencies/Memcury/memcury.h"

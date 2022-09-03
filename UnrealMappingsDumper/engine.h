@@ -6,6 +6,9 @@
 
 typedef int FThreadSafeCounter;
 
+/// <summary>
+/// The idea here is to easily override UE classes for specific Engine versiosn if needed.
+/// </summary>
 template <typename UObjectBase = UObjectDependency>
 class DefaultEngine
 {
@@ -192,6 +195,65 @@ public:
 		TUndefinedArray ClassReps;
 		TArray<UField*> NetFields;
 	};
+
+	// Completely refactor this if we need to override it for a different engine version, but still keep it as a singleton.
+	class ObjObjects
+	{
+		enum
+		{
+			NumElementsPerChunk = 64 * 1024,
+		};
+
+		ObjObjects() 
+		{
+		}
+
+		static ObjObjects* Inst;
+
+	public:
+
+		struct FUObjectItem
+		{
+			UObject* Object;
+			int32_t Flags;
+			int32_t ClusterRootIndex;
+			int32_t SerialNumber;
+		};
+
+		ObjObjects& operator=(const ObjObjects&) = delete;
+
+	private:
+
+		FUObjectItem** Objects;
+		FUObjectItem* PreAllocatedObjects;
+		int32_t MaxElements;
+		int32_t NumElements;
+		int32_t MaxChunks;
+		int32_t NumChunks;
+
+	public:
+
+		static UObject* GetObjectByIndex(int Index);
+		static void ForEach(std::function<void(UObject*&)> Action);
+
+		static FORCEINLINE int Num()
+		{
+			return Get().NumElements;
+		}
+
+		static void SetInstance(ObjObjects* Val)
+		{
+			if (Val)
+				Inst = Val;
+		}
+	};
+
+public:
+
+	static virtual auto GetGObjectsPatterns()
+	{
+
+	}
 };
 
 class Engine_UE5 : public DefaultEngine<>
