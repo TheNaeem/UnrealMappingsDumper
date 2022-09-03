@@ -32,7 +32,7 @@ DefaultEngine<T>::UObject* DefaultEngine<T>::ObjObjects::GetObjectByIndex(int In
 	if (
 		Index < Inst->NumElements &&
 		Index >= 0 &&
-		ChunkIndex < Get().NumChunks &&
+		ChunkIndex < Inst->NumChunks &&
 		Index < Inst->MaxElements
 		)
 	{
@@ -56,4 +56,22 @@ void DefaultEngine<T>::ObjObjects::ForEach(std::function<void(UObject*&)> Action
 
 		Action(Obj);
 	}
+}
+
+template <typename T>
+const std::initializer_list<IScanObject> DefaultEngine<T>::GetGObjectsPatterns()
+{
+	const auto Ret =
+	{
+		PatternScanObject("48 89 05 ? ? ? ? E8 ? ? ? ? 45 84 F6 0F 84", true, 3),
+		PatternScanObject("48 89 05 ? ? ? ? E8 ? ? ? ? 45 84 F6 0F 84", true, 3),
+		StringRefScanObject(
+			L"Max UObject count is invalid. It must be a number that is greater than 0.",
+			true,
+			-4,
+			true,
+			0x74)
+	};
+
+	return Ret;
 }

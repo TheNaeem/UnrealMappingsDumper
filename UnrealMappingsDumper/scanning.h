@@ -8,10 +8,10 @@ struct IScanObject
 struct PatternScanObject : public IScanObject
 {
 	PatternScanObject(
-		const char* sig,
-		int resultOffset = 0,
-		bool relative = false,
-		int relativeAddressOffset = 0)
+		std::string sig,
+		int relativeAddressOffset = 0,
+		bool relative = true,
+		int resultOffset = 0)
 		: 
 		Sig(sig), 
 		ResultOffset(resultOffset), 
@@ -20,10 +20,40 @@ struct PatternScanObject : public IScanObject
 	{
 	}
 
-	const char* Sig;
+	std::string Sig;
 	bool bRelative;
 	int RelativeAddressOffset;
 	int ResultOffset;
+
+	uintptr_t TryFind() override;
+};
+
+template <typename StrType = std::wstring>
+struct StringRefScanObject : public IScanObject
+{
+	StringRefScanObject(
+		StrType stringRef,
+		bool scanBackwards = false,
+		int offset = 0,
+		bool relative = true,
+		uint8_t opcodeToFind = 0,
+		int opcodeFindsToSkip = 0)
+		:
+		StringRef(stringRef),
+		OpcodeToFind(opcodeToFind),
+		OpcodeFindsToSkip(opcodeFindsToSkip),
+		bRelative(relative),
+		Offset(offset),
+		bScanBackwards(scanBackwards)
+	{
+	}
+
+	StrType StringRef;
+	uint8_t OpcodeToFind;
+	int OpcodeFindsToSkip;
+	bool bRelative;
+	int Offset;
+	bool bScanBackwards;
 
 	uintptr_t TryFind() override;
 };

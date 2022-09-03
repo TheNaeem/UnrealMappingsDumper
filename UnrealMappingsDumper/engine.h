@@ -3,6 +3,7 @@
 #include "uobjectDependency.h"
 #include "unrealEnums.h"
 #include "unrealContainers.h"
+#include "scanning.h"
 
 typedef int FThreadSafeCounter;
 
@@ -238,7 +239,7 @@ public:
 
 		static FORCEINLINE int Num()
 		{
-			return Get().NumElements;
+			return Inst->NumElements;
 		}
 
 		static void SetInstance(ObjObjects* Val)
@@ -250,10 +251,7 @@ public:
 
 public:
 
-	static virtual auto GetGObjectsPatterns()
-	{
-
-	}
+	static const std::initializer_list<IScanObject> GetGObjectsPatterns();
 };
 
 class Engine_UE5 : public DefaultEngine<>
