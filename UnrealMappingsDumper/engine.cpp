@@ -59,7 +59,7 @@ void DefaultEngine<T>::ObjObjects::ForEach(std::function<void(UObject*&)> Action
 }
 
 template <typename T>
-std::initializer_list<ScanObject> DefaultEngine<T>::GetGObjectsPatterns()
+std::initializer_list<ScanObject> DefaultEngine<T>::GetGObjectsPatterns() // TODO: add more
 {
 	return  
 	{

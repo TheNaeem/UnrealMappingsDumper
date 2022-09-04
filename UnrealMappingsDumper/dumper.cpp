@@ -37,6 +37,15 @@ bool Dumper<Engine>::Init(uintptr_t GObjectsOverride, uintptr_t FNameToStringOve
 	return true;
 }
 
+template <typename Engine>
+void Dumper<Engine>::Run()
+{
+	Engine::ObjObjects::ForEach([](Engine::UObject*& Object)
+		{
+
+		});
+}
+
 template class Dumper<DefaultEngine<>>;
 template class Dumper<Engine_Fortnite>;
 template class Dumper<Engine_UE5>;

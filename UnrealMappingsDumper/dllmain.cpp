@@ -4,6 +4,8 @@
 
 void WINAPI Main()
 {
+	UE_LOG("Unreal Mappings Dumper created by OutTheShade");
+
 	auto App = CreateAppInstance(EUnrealVersion::UE5);
 
 	if (!App)
@@ -12,7 +14,11 @@ void WINAPI Main()
 		return;
 	}
 
-	App->Init();
+	if (!App->Init())
+	{
+		UE_LOG("Failed to initialize the dumper. Returning.");
+		return;
+	}
 
 	delete App;
 }
