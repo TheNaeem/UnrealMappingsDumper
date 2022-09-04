@@ -77,5 +77,8 @@
     <ClCompile Include="scanning.cpp">
       <Filter>Core\Scanning</Filter>
     </ClCompile>
+    <ClCompile Include="dumper.cpp">
+      <Filter>Core\Dumper</Filter>
+    </ClCompile>
   </ItemGroup>
 </Project>

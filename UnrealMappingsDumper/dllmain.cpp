@@ -12,7 +12,7 @@ void WINAPI Main()
 		return;
 	}
 
-
+	App->Init();
 
 	delete App;
 }

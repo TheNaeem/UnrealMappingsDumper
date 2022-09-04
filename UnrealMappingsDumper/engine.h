@@ -8,7 +8,7 @@
 typedef int FThreadSafeCounter;
 
 /// <summary>
-/// The idea here is to easily override UE classes for specific Engine versiosn if needed.
+/// The idea here is to easily override UE classes for specific Engine versiosn if needed. DefaultEngine is targeted for UE5.
 /// </summary>
 template <typename UObjectBase = UObjectDependency>
 class DefaultEngine
@@ -242,19 +242,19 @@ public:
 			return Inst->NumElements;
 		}
 
-		static void SetInstance(ObjObjects* Val)
+		static void SetInstance(uintptr_t Val)
 		{
 			if (Val)
-				Inst = Val;
+				Inst = (ObjObjects*)Val;
 		}
 	};
 
 public:
 
-	static const std::initializer_list<IScanObject> GetGObjectsPatterns();
+	static const std::initializer_list<ScanObject> GetGObjectsPatterns();
 };
 
-class Engine_UE5 : public DefaultEngine<>
+class Engine_UE5 : public DefaultEngine<> // DefaultEngine is pretty much already for UE5
 {
 public:
 

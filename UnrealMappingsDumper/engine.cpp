@@ -59,18 +59,11 @@ void DefaultEngine<T>::ObjObjects::ForEach(std::function<void(UObject*&)> Action
 }
 
 template <typename T>
-const std::initializer_list<IScanObject> DefaultEngine<T>::GetGObjectsPatterns()
+const std::initializer_list<ScanObject> DefaultEngine<T>::GetGObjectsPatterns()
 {
 	const auto Ret =
 	{
-		PatternScanObject("48 89 05 ? ? ? ? E8 ? ? ? ? 45 84 F6 0F 84", true, 3),
-		PatternScanObject("48 89 05 ? ? ? ? E8 ? ? ? ? 45 84 F6 0F 84", true, 3),
-		StringRefScanObject(
-			L"Max UObject count is invalid. It must be a number that is greater than 0.",
-			true,
-			-4,
-			true,
-			0x74)
+		PatternScanObject("48 89 05 ? ? ? ? E8 ? ? ? ? ? ? ? 0F 84", true, 3)
 	};
 
 	return Ret;
