@@ -3,7 +3,7 @@
 #include "engine.h"
 #include "unrealFunctions.h"
 
-std::wstring_view FNameBase::AsString()
+std::wstring_view FNameBase::AsString() const
 {
 	FString Ret;
 	FNameToString(this, Ret);
@@ -16,7 +16,7 @@ std::wstring_view FNameBase::AsString()
 	return {};
 }
 
-std::string FNameBase::ToString()
+std::string FNameBase::ToString() const
 {
 	auto Ret = AsString();
 
@@ -36,7 +36,7 @@ DefaultEngine<T>::UObject* DefaultEngine<T>::ObjObjects::GetObjectByIndex(int In
 		Index < Inst->MaxElements
 		)
 	{
-		FUObjectItem* Chunk = Inst->Objects[ChunkIndex]->Object;
+		auto Chunk = Inst->Objects[ChunkIndex]->Object;
 
 		if (Chunk)
 			return (Chunk + WithinChunkIndex);
@@ -48,7 +48,7 @@ DefaultEngine<T>::UObject* DefaultEngine<T>::ObjObjects::GetObjectByIndex(int In
 template <typename T>
 void DefaultEngine<T>::ObjObjects::ForEach(std::function<void(UObject*&)> Action)
 {
-	for (size_t i = 0; i < Num(); i++)
+	for (int i = 0; i < Num(); i++)
 	{
 		auto Obj = GetObjectByIndex(i);
 
@@ -59,12 +59,16 @@ void DefaultEngine<T>::ObjObjects::ForEach(std::function<void(UObject*&)> Action
 }
 
 template <typename T>
-const std::initializer_list<ScanObject> DefaultEngine<T>::GetGObjectsPatterns()
+std::initializer_list<ScanObject> DefaultEngine<T>::GetGObjectsPatterns()
 {
-	const auto Ret =
+	return  
 	{
-		PatternScanObject("48 89 05 ? ? ? ? E8 ? ? ? ? ? ? ? 0F 84", true, 3)
+		PatternScanObject("48 89 05 ? ? ? ? E8 ? ? ? ? ? ? ? 0F 84", 3, true)
 	};
-
-	return Ret;
 }
+
+template class DefaultEngine<UObjectDependency>;
+template class DefaultEngine<FortniteUObjectBase>;
+
+template <typename T>
+typename DefaultEngine<T>::ObjObjects* DefaultEngine<T>::ObjObjects::Inst;

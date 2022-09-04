@@ -10,8 +10,8 @@ class FNameBase
 {
 public:
 
-	std::wstring_view AsString();
-	std::string ToString();
+	std::wstring_view AsString() const;
+	std::string ToString() const;
 };
 
 class UObjectDependency

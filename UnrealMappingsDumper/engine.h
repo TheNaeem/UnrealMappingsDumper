@@ -26,7 +26,7 @@ public:
 
 	public:
 
-		FORCEINLINE UClass* Class()
+		FORCEINLINE class UClass* Class()
 		{
 			return ClassPrivate;
 		}
@@ -205,10 +205,6 @@ public:
 			NumElementsPerChunk = 64 * 1024,
 		};
 
-		ObjObjects() 
-		{
-		}
-
 		static ObjObjects* Inst;
 
 	public:
@@ -251,7 +247,7 @@ public:
 
 public:
 
-	static const std::initializer_list<ScanObject> GetGObjectsPatterns();
+	static std::initializer_list<ScanObject> GetGObjectsPatterns();
 };
 
 class Engine_UE5 : public DefaultEngine<> // DefaultEngine is pretty much already for UE5

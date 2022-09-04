@@ -1,6 +1,7 @@
 #include "pch.h"
 
 #include "scanning.h"
+#include "../Dependencies/Memcury/memcury.h"
 
 uintptr_t PatternScanObject::TryFind()
 {
@@ -31,7 +32,7 @@ uintptr_t StringRefScanObject<T>::TryFind()
 	{
 		auto BeforeOpcodeScan = Addy.Get();
 
-		Addy.ScanFor({ OpcodeFindsToSkip }, !bScanBackwards, OpcodeFindsToSkip);
+		Addy.ScanFor({ OpcodeToFind }, !bScanBackwards, OpcodeFindsToSkip);
 
 		if (Addy.Get() == BeforeOpcodeScan)
 			return 0;
@@ -43,3 +44,6 @@ uintptr_t StringRefScanObject<T>::TryFind()
 
 	return Addy.Get();
 }
+
+template struct StringRefScanObject<std::string>;
+template struct StringRefScanObject<std::wstring>;

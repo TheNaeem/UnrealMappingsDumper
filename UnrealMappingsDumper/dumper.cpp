@@ -5,7 +5,7 @@
 #include "app.h"
 
 template <typename Engine>
-bool DumperInternal<Engine>::Init(uintptr_t GObjectsOverride, uintptr_t FNameToStringOverride)
+bool Dumper<Engine>::Init(uintptr_t GObjectsOverride, uintptr_t FNameToStringOverride)
 {
 	if (GObjectsOverride)
 		Engine::ObjObjects::SetInstance(GObjectsOverride);
@@ -36,3 +36,7 @@ bool DumperInternal<Engine>::Init(uintptr_t GObjectsOverride, uintptr_t FNameToS
 
 	return true;
 }
+
+template class Dumper<DefaultEngine<>>;
+template class Dumper<Engine_Fortnite>;
+template class Dumper<Engine_UE5>;
