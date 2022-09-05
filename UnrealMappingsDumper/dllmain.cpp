@@ -20,6 +20,8 @@ void WINAPI Main()
 		return;
 	}
 
+	App->Run();
+
 	delete App;
 }
 

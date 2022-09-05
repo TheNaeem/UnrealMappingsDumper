@@ -24,6 +24,147 @@ std::string FNameBase::ToString() const
 }
 
 template <typename T>
+void DefaultEngine<T>::UObject::GetPathName(std::wstring& Result, UObject* StopOuter)
+{
+	if (this == StopOuter || this == NULL)
+	{
+		Result += L"None";
+		return;
+	}
+
+	if (this->OuterPrivate && this->OuterPrivate != StopOuter)
+	{
+		this->OuterPrivate->GetPathName(Result, StopOuter);
+		Result += L".";
+	}
+
+	Result += NamePrivate.AsString();
+}
+
+// inspired by https://github.com/kem0x/FortKit/blob/b22bb917ea254ac789333922c709d112c8989184/FortKitInsider/ue4.cpp#L176
+template <typename T>
+EPropertyType DefaultEngine<T>::FProperty::GetPropertyType() 
+{
+	switch (this->GetClass()->GetId())
+	{
+		case CASTCLASS_FObjectProperty:
+		case CASTCLASS_FClassProperty:
+		case CASTCLASS_FObjectPtrProperty:
+		case CASTCLASS_FClassPtrProperty:
+		{
+			return EPropertyType::ObjectProperty;
+		}
+		case CASTCLASS_FStructProperty:
+		{
+			return EPropertyType::StructProperty;
+		}
+		case CASTCLASS_FInt8Property:
+		{
+			return EPropertyType::Int8Property;
+		}
+		case CASTCLASS_FInt16Property:
+		{
+			return EPropertyType::Int16Property;
+		}
+		case CASTCLASS_FIntProperty:
+		{
+			return EPropertyType::IntProperty;
+		}
+		case CASTCLASS_FInt64Property:
+		{
+			return EPropertyType::Int16Property;
+		}
+		case CASTCLASS_FUInt16Property:
+		{
+			return EPropertyType::UInt16Property;
+		}
+		case CASTCLASS_FUInt32Property:
+		{
+			return EPropertyType::UInt32Property;
+		}
+		case CASTCLASS_FUInt64Property:
+		{
+			return EPropertyType::UInt64Property;
+		}
+		case CASTCLASS_FArrayProperty:
+		{
+			return EPropertyType::ArrayProperty;
+		}
+		case CASTCLASS_FFloatProperty:
+		{
+			return EPropertyType::FloatProperty;
+		}
+		case CASTCLASS_FDoubleProperty:
+		{
+			return EPropertyType::DoubleProperty;
+		}
+		case CASTCLASS_FBoolProperty:
+		{
+			return EPropertyType::BoolProperty;
+		}
+		case CASTCLASS_FStrProperty:
+		{
+			return EPropertyType::StrProperty;
+		}
+		case CASTCLASS_FNameProperty:
+		{
+			return EPropertyType::NameProperty;
+		}
+		case CASTCLASS_FTextProperty:
+		{
+			return EPropertyType::TextProperty;
+		}
+		case CASTCLASS_FEnumProperty:
+		{
+			return EPropertyType::EnumProperty;
+		}
+		case CASTCLASS_FInterfaceProperty:
+		{
+			return EPropertyType::InterfaceProperty;
+		}
+		case CASTCLASS_FMapProperty:
+		{
+			return EPropertyType::MapProperty;
+		}
+		case CASTCLASS_FByteProperty:
+		{
+			FByteProperty* ByteProp = static_cast<FByteProperty*>(this);
+
+			if (ByteProp->GetEnum())
+				return EPropertyType::EnumAsByteProperty;
+			
+			return EPropertyType::ByteProperty;
+		}
+		case CASTCLASS_FMulticastSparseDelegateProperty:
+		{
+			return EPropertyType::MulticastDelegateProperty;
+		}
+		case CASTCLASS_FDelegateProperty:
+		{
+			return EPropertyType::DelegateProperty;
+		}
+		case CASTCLASS_FSoftObjectProperty:
+		case CASTCLASS_FSoftClassProperty:
+		case CASTCLASS_FWeakObjectProperty:
+		{
+			return EPropertyType::SoftObjectProperty;
+		}
+		case CASTCLASS_FLazyObjectProperty:
+		{
+			return EPropertyType::LazyObjectProperty;
+		}
+		case CASTCLASS_FSetProperty:
+		{
+			return EPropertyType::SetProperty;
+		}
+		default:
+		{
+			return EPropertyType::Unknown;
+		}
+	}
+}
+
+template <typename T>
 DefaultEngine<T>::UObject* DefaultEngine<T>::ObjObjects::GetObjectByIndex(int Index)
 {
 	int ChunkIndex = Index / NumElementsPerChunk;
@@ -61,7 +202,7 @@ void DefaultEngine<T>::ObjObjects::ForEach(std::function<void(UObject*&)> Action
 template <typename T>
 std::initializer_list<ScanObject> DefaultEngine<T>::GetGObjectsPatterns() // TODO: add more
 {
-	return  
+	return
 	{
 		PatternScanObject("48 89 05 ? ? ? ? E8 ? ? ? ? ? ? ? 0F 84", 3, true)
 	};

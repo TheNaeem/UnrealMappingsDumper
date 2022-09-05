@@ -18,10 +18,20 @@ class UObjectDependency
 {
 public:
 
-	class FName : public FNameBase
+	struct FName : public FNameBase
 	{
 		FNameEntryId ComparisonIndex;
 		uint32_t Number;
+
+		bool operator== (FName n) const
+		{
+			return ComparisonIndex == n.ComparisonIndex;
+		}
+
+		friend size_t hash_value(const FName& p)
+		{
+			return phmap::HashState().combine(0, p.ComparisonIndex, p.ComparisonIndex / 3);
+		}
 	};
 
 protected:
@@ -35,13 +45,23 @@ class FortniteUObjectBase : public UObjectDependency
 {
 public:
 
-	class FName : public FNameBase
+	struct FName : public FNameBase
 	{
 		FNameEntryId ComparisonIndex;
 
 #if !UE_FNAME_OUTLINE_NUMBER
 		uint32_t Number;
 #endif
+
+		bool operator== (FName n) const
+		{
+			return ComparisonIndex == n.ComparisonIndex;
+		}
+
+		friend size_t hash_value(const FName& p)
+		{
+			return phmap::HashState().combine(0, p.ComparisonIndex, p.ComparisonIndex / 3);
+		}
 	};
 
 protected:

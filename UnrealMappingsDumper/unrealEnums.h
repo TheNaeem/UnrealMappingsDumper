@@ -1,5 +1,55 @@
 #pragma once
 
+enum class ECompressionMethod : uint8_t
+{
+	None,
+	Oodle,
+	Brotli,
+	Unknown = 0xFF
+};
+
+enum class EPropertyType : uint8_t
+{
+	ByteProperty,
+	BoolProperty,
+	IntProperty,
+	FloatProperty,
+	ObjectProperty,
+	NameProperty,
+	DelegateProperty,
+	DoubleProperty,
+	ArrayProperty,
+	StructProperty,
+	StrProperty,
+	TextProperty,
+	InterfaceProperty,
+	MulticastDelegateProperty,
+	WeakObjectProperty,
+	LazyObjectProperty,
+	AssetObjectProperty,
+	SoftObjectProperty,
+	UInt64Property,
+	UInt32Property,
+	UInt16Property,
+	Int64Property,
+	Int16Property,
+	Int8Property,
+	MapProperty,
+	SetProperty,
+	EnumProperty,
+	FieldPathProperty,
+	EnumAsByteProperty,
+
+	Unknown = 0xFF
+};
+
+enum class EEnumFlags
+{
+	None,
+	Flags = 0x00000001,
+	NewerVersionExists = 0x00000002,
+};
+
 enum ELifetimeCondition
 {
 	COND_None = 0,		// This property has no condition, and will send anytime it changes

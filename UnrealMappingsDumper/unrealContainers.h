@@ -1,5 +1,12 @@
 #pragma once
 
+template <typename K, typename V>
+struct TPair
+{
+	K Key;
+	V Value;
+};
+
 template <class T>
 class TArray
 {
@@ -41,6 +48,7 @@ template<class TEnum>
 class TEnumAsByte
 {
 public:
+
 	typedef TEnum EnumType;
 
 	TEnumAsByte() = default;
@@ -90,4 +98,10 @@ private:
 
 class FString : public TArray<wchar_t>
 {
+public:
+
+	FORCEINLINE std::wstring_view AsString()
+	{
+		return Data();
+	}
 };

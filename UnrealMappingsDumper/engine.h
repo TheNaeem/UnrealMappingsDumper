@@ -7,6 +7,14 @@
 
 typedef int FThreadSafeCounter;
 
+#define DECLARE_STATIC_CLASS(PATH) \
+    static FORCEINLINE class UClass* StaticClass() \
+	{ \
+		static auto Inst = FindObject<class UClass>(PATH); \
+		return Inst; \
+	} \
+
+
 /// <summary>
 /// The idea here is to easily override UE classes for specific Engine versiosn if needed. DefaultEngine is targeted for UE5.
 /// </summary>
@@ -15,24 +23,72 @@ class DefaultEngine
 {
 public:
 
+	class FName : public UObjectBase::FName
+	{
+	};
+
+	template <class T>
+	static T* FindObject(std::wstring FullName)
+	{
+		for (int i = 0; i < ObjObjects::Num(); i++)
+		{
+			auto Obj = ObjObjects::GetObjectByIndex(i);
+
+			if (!Obj) continue;
+
+			auto Path = Obj->GetPath();
+
+			if (FullName.size() != Path.size())
+				continue;
+
+			bool Same = wcsncmp(FullName.c_str(), Path.c_str(), FullName.size()) == 0;
+
+			if (Same)
+				return (T*)Obj;
+		}
+
+		return nullptr;
+	}
+
 	class UObject
 	{
 		void* Vtbl;
 		EObjectFlags ObjectFlags;
 		int32_t InternalIndex;
 		class UClass* ClassPrivate;
-		UObjectBase::FName NamePrivate;
+		FName NamePrivate;
 		UObject* OuterPrivate;
 
 	public:
+
+		void GetPathName(std::wstring& Result, UObject* StopOuter = nullptr);
+
+		FORCEINLINE FName GetName()
+		{
+			return NamePrivate;
+		}
+
+		FORCEINLINE std::wstring GetPath()
+		{
+			std::wstring Ret;
+
+			GetPathName(Ret);
+
+			return Ret;
+		}
 
 		FORCEINLINE class UClass* Class()
 		{
 			return ClassPrivate;
 		}
+
+		FORCEINLINE UObject* Outer()
+		{
+			return OuterPrivate;
+		}
 	};
 
-	class UField
+	class UField : public UObject
 	{
 		UField* Next;
 
@@ -46,45 +102,50 @@ public:
 
 	class FFieldClass
 	{
-		UObjectBase::FName Name;
-		uint64_t Id;
+		FName Name;
+		EClassCastFlags Id;
 		uint64_t CastFlags;
 		EClassFlags ClassFlags;
 		FFieldClass* SuperClass;
 		class FField* DefaultObject;
-		class FField* (*ConstructFn)(class FFieldVariant&, UObjectBase::FName&, EObjectFlags);
+		class FField* (*ConstructFn)(class FFieldVariant&, FName&, EObjectFlags);
 		FThreadSafeCounter UnqiueNameIndexCounter;
 
 	public:
 
-		inline std::string GetName() const
+		FORCEINLINE std::string GetName() const
 		{
 			return Name.ToString();
 		}
 
-		inline UObjectBase::FName GetFName() const
+		FORCEINLINE UObjectBase::FName GetFName() const
 		{
 			return Name;
 		}
 
-		inline uint64_t GetId() const
+		FORCEINLINE uint64_t GetId() const
 		{
 			return Id;
 		}
 
-		inline uint64_t GetCastFlags() const
+		FORCEINLINE uint64_t GetCastFlags() const
 		{
 			return CastFlags;
 		}
 
-		inline bool HasAnyCastFlags(const uint64_t InCastFlags) const
+		FORCEINLINE bool HasAnyCastFlags(const uint64_t InCastFlags) const
 		{
 			return !!(CastFlags & InCastFlags);
 		}
 
-		inline bool HasAllCastFlags(const uint64_t InCastFlags) const
+		FORCEINLINE bool HasAllCastFlags(const uint64_t InCastFlags) const
 		{
 			return (CastFlags & InCastFlags) == InCastFlags;
+		}
+
+		FORCEINLINE EClassCastFlags GetId()
+		{
+			return Id;
 		}
 	};
 
@@ -105,10 +166,15 @@ public:
 		FFieldClass* ClassPrivate;
 		FFieldVariant Owner;
 		FField* Next;
-		UObjectBase::FName NamePrivate;
+		FName NamePrivate;
 		EObjectFlags FlagsPrivate;
 
 	public:
+
+		FORCEINLINE FName GetName()
+		{
+			return NamePrivate;
+		}
 
 		FORCEINLINE FField* GetNext()
 		{
@@ -142,11 +208,121 @@ public:
 
 	public:
 
-		UObjectBase::FName RepNotifyFunc;
+		FName RepNotifyFunc;
 		FProperty* PropertyLinkNext;
 		FProperty* NextRef;
 		FProperty* DestructorLinkNext;
 		FProperty* PostConstructLinkNext;
+
+		EPropertyType GetPropertyType();
+
+		FORCEINLINE int32_t GetArrayDim()
+		{
+			return ArrayDim;
+		}
+	};
+
+	class FStructProperty : public FProperty
+	{
+		class UScriptStruct* Struct;
+
+	public:
+
+		FORCEINLINE class UScriptStruct* GetStruct()
+		{
+			return Struct;
+		}
+	};
+
+	class FByteProperty : public FProperty
+	{
+		class UEnum* Enum;
+
+	public:
+
+		FORCEINLINE class UEnum* GetEnum()
+		{
+			return Enum;
+		}
+	};
+
+	class FArrayProperty : public FProperty
+	{
+		enum class EArrayPropertyFlags
+		{
+			None,
+			UsesMemoryImageAllocator
+		};
+
+		FProperty* Inner;
+		EArrayPropertyFlags ArrayFlags;
+
+	public:
+
+		FORCEINLINE FProperty* GetInner()
+		{
+			return Inner;
+		}
+	};
+
+	class FMapProperty : public FProperty
+	{
+		FProperty* KeyProp;
+		FProperty* ValueProp;
+
+	public:
+
+		FORCEINLINE FProperty* GetKey()
+		{
+			return KeyProp;
+		}
+
+		FORCEINLINE FProperty* GetValue()
+		{
+			return ValueProp;
+		}
+	};
+
+	class FEnumProperty : public FProperty
+	{
+		FProperty* UnderlyingProp;
+		class UEnum* Enum;
+
+	public:
+
+		FORCEINLINE FProperty* GetUnderlying()
+		{
+			return UnderlyingProp;
+		}
+
+		FORCEINLINE class UEnum* GetEnum()
+		{
+			return Enum;
+		}
+	};
+
+	class UEnum : public UField
+	{
+	public:
+
+		enum class ECppForm
+		{
+			Regular,
+			Namespaced,
+			EnumClass
+		};
+
+		FString CppType;
+		TArray<TPair<FName, int64_t>> Names;
+		ECppForm CppForm;
+		EEnumFlags EnumFlags;
+
+		DECLARE_STATIC_CLASS(L"/Script/CoreUObject.Enum");
+
+		std::wstring_view GetCPPString()
+		{
+			return CppType.AsString();
+		}
 	};
 
 	class UStruct : public UField
@@ -172,6 +348,18 @@ public:
 		{
 			return SuperStruct;
 		}
+
+		FORCEINLINE FProperty* GetProperties()
+		{
+			return static_cast<FProperty*>(ChildProperties);
+		}
+	};
+
+	class UScriptStruct : public UStruct
+	{
+	public:
+
+		DECLARE_STATIC_CLASS(L"/Script/CoreUObject.ScriptStruct");
 	};
 
 	class UClass : public UStruct
@@ -192,9 +380,11 @@ public:
 		EClassFlags ClassFlags;
 		EClassCastFlags ClassCastFlags;
 		UClass* ClassWithin;
-		UObjectBase::FName ClassConfigName;
+		FName ClassConfigName;
 		TUndefinedArray ClassReps;
 		TArray<UField*> NetFields;
+
+		DECLARE_STATIC_CLASS(L"/Script/CoreUObject.Class");
 	};
 
 	// Completely refactor this if we need to override it for a different engine version, but still keep it as a singleton.
@@ -248,6 +438,12 @@ public:
 public:
 
 	static std::initializer_list<ScanObject> GetGObjectsPatterns();
+
+	template <typename T>
+	static FORCEINLINE UClass* StaticClass()
+	{
+		return T::StaticClass();
+	}
 };
 
 class Engine_UE5 : public DefaultEngine<> // DefaultEngine is pretty much already for UE5
