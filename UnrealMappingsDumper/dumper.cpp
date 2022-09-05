@@ -62,10 +62,10 @@ void Dumper<Engine>::Run(ECompressionMethod CompressionMethod) const
 	StreamWriter Buffer;
 	phmap::parallel_flat_hash_map<Engine::FName, int> NameMap;
 
-	std::vector<typename Engine::UEnum*> Enums;
-	std::vector<typename Engine::UStruct*> Structs; // TODO: a better way than making this completely dynamic
+	std::vector<class Engine::UEnum*> Enums;
+	std::vector<class Engine::UStruct*> Structs; // TODO: a better way than making this completely dynamic
 
-	std::function<void(typename Engine::FProperty*&, EPropertyType)> WritePropertyWrapper{}; // hacky.. i know
+	std::function<void(class Engine::FProperty*&, EPropertyType)> WritePropertyWrapper{}; // hacky.. i know
 
 	auto WriteProperty = [&](Engine::FProperty*& Prop, EPropertyType Type)
 	{
