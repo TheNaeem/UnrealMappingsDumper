@@ -177,10 +177,10 @@ DefaultEngine<T>::UObject* DefaultEngine<T>::ObjObjects::GetObjectByIndex(int In
 		Index < Inst->MaxElements
 		)
 	{
-		auto Chunk = Inst->Objects[ChunkIndex]->Object;
+		auto Chunk = Inst->Objects[ChunkIndex];
 
 		if (Chunk)
-			return (Chunk + WithinChunkIndex);
+			return (Chunk + WithinChunkIndex)->Object;
 	}
 
 	return nullptr;
@@ -200,11 +200,23 @@ void DefaultEngine<T>::ObjObjects::ForEach(std::function<void(UObject*&)> Action
 }
 
 template <typename T>
-std::initializer_list<ScanObject> DefaultEngine<T>::GetGObjectsPatterns() // TODO: add more
+std::vector<std::shared_ptr<IScanObject>> DefaultEngine<T>::GetFNameStringPattrns() // TODO: add more
 {
 	return
 	{
-		PatternScanObject("48 89 05 ? ? ? ? E8 ? ? ? ? ? ? ? 0F 84", 3, true)
+		std::make_shared<PatternScanObject>("E8 ? ? ? ? 83 7D C8 00 48 8D 15 ? ? ? ? 0F 5A DE", 1, true),
+		std::make_shared<StringRefScanObject<std::wstring>>(
+			L"%s %s SetTimer passed a negative or zero time. The associated timer may fail to be created/fire! If using InitialStartDelayVariance, be sure it is smaller than (Time + InitialStartDelay).",
+			true, 1, true, 0xE8)
+	};
+}
+
+template <typename T>
+std::vector<std::shared_ptr<IScanObject>> DefaultEngine<T>::GetGObjectsPatterns() // TODO: add more
+{
+	return
+	{
+		std::make_shared<PatternScanObject>("48 89 05 ? ? ? ? E8 ? ? ? ? ? ? ? 0F 84", 3, true)
 	};
 }
 

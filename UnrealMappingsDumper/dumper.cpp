@@ -19,9 +19,9 @@ bool Dumper<Engine>::Init(uintptr_t GObjectsOverride, uintptr_t FNameToStringOve
 
 	uintptr_t GObjectsAddy = 0;
 
-	for (ScanObject Scan : Engine::GetGObjectsPatterns())
+	for (auto Scan : Engine::GetGObjectsPatterns())
 	{
-		GObjectsAddy = Scan.TryFind();
+		GObjectsAddy = Scan->TryFind();
 
 		if (GObjectsAddy)
 			break;
@@ -35,6 +35,24 @@ bool Dumper<Engine>::Init(uintptr_t GObjectsOverride, uintptr_t FNameToStringOve
 
 	Engine::ObjObjects::SetInstance(GObjectsAddy);
 
+	uintptr_t FNameStringAddy = 0;
+
+	for (auto Scan : Engine::GetFNameStringPattrns())
+	{
+		FNameStringAddy = Scan->TryFind();
+
+		if (FNameStringAddy)
+			break;
+	}
+
+	if (!FNameStringAddy)
+	{
+		UE_LOG("Could not find the address for FNameToString. Try overriding it or adding the correct sig for it.");
+		return false;
+	}
+
+	FNameToString = (_FNameToString)FNameStringAddy;
+
 	return true;
 }
 
@@ -47,33 +65,7 @@ void Dumper<Engine>::Run(ECompressionMethod CompressionMethod) const
 	std::vector<typename Engine::UEnum*> Enums;
 	std::vector<typename Engine::UStruct*> Structs; // TODO: a better way than making this completely dynamic
 
-	auto GetStructNames = [&](Engine::UStruct* Struct)
-	{
-		NameMap.insert_or_assign(Struct->GetName(), 0);
-
-		if (Struct->Super() && !NameMap.contains(Struct->Super()->GetName()))
-			NameMap.insert_or_assign(Struct->Super()->GetName(), 0);
-
-		auto Props = Struct->GetProperties();
-
-		while (Props)
-		{
-			NameMap.insert_or_assign(Props->GetName(), 0);
-			Props = static_cast<Engine::FProperty*>(Props->GetNext());
-		}
-	};
-
-	auto GetEnumNames = [&](Engine::UEnum* Enum)
-	{
-		NameMap.insert_or_assign(Enum->GetName(), 0);
-
-		for (auto i = 0; i < Enum->Names.Num(); i++)
-		{
-			NameMap.insert_or_assign(Enum->Names[i].Key, 0);
-		}
-	};
-
-	std::function<void(typename Engine::FProperty*&, EPropertyType)> WritePropertyWrapper{}; // hacky but idc
+	std::function<void(typename Engine::FProperty*&, EPropertyType)> WritePropertyWrapper{}; // hacky.. i know
 
 	auto WriteProperty = [&](Engine::FProperty*& Prop, EPropertyType Type)
 	{
@@ -140,13 +132,31 @@ void Dumper<Engine>::Run(ECompressionMethod CompressionMethod) const
 				auto Struct = static_cast<Engine::UStruct*>(Object);
 
 				Structs.push_back(Struct);
-				GetStructNames(Struct);
+				
+				NameMap.insert_or_assign(Struct->GetName(), 0);
+
+				if (Struct->Super() && !NameMap.contains(Struct->Super()->GetName()))
+					NameMap.insert_or_assign(Struct->Super()->GetName(), 0);
+
+				auto Props = Struct->GetProperties();
+
+				while (Props)
+				{
+					NameMap.insert_or_assign(Props->GetName(), 0);
+					Props = static_cast<Engine::FProperty*>(Props->GetNext());
+				}
 			}
 			else if (Object->Class() == Engine::UEnum::StaticClass())
 			{
 				auto Enum = static_cast<Engine::UEnum*>(Object);
 				Enums.push_back(Enum);
-				GetEnumNames(Enum);
+				
+				NameMap.insert_or_assign(Enum->GetName(), 0);
+
+				for (auto i = 0; i < Enum->Names.Num(); i++)
+				{
+					NameMap.insert_or_assign(Enum->Names[i].Key, 0);
+				}
 			}
 		});
 
@@ -196,8 +206,8 @@ void Dumper<Engine>::Run(ECompressionMethod CompressionMethod) const
 		std::vector<FPropertyData> Properties;
 
 		auto Props = Struct->GetProperties();
-		unsigned short PropCount = 0;
-		unsigned short SerializablePropCount = 0;
+		uint16_t PropCount = 0;
+		uint16_t SerializablePropCount = 0;
 
 		while (Props)
 		{
@@ -225,13 +235,14 @@ void Dumper<Engine>::Run(ECompressionMethod CompressionMethod) const
 
 	std::vector<uint8_t> UsmapData;
 
-	switch (CompressionMethod)
+	switch (CompressionMethod) // TODO: more compression methods
 	{
 		case ECompressionMethod::None:
 		default:
 		{
 			std::string UncompressedStream = Buffer.GetBuffer().str();
-			UsmapData = std::vector<uint8_t>(UncompressedStream.size(), UncompressedStream[0]);
+			UsmapData.resize(UncompressedStream.size());
+			memcpy(UsmapData.data(), UncompressedStream.data(), UsmapData.size());
 		}
 	}
 
@@ -239,7 +250,7 @@ void Dumper<Engine>::Run(ECompressionMethod CompressionMethod) const
 
 	FileOutput.Write<uint16_t>(0x30C4); //magic
 	FileOutput.Write<uint8_t>(0); //version
-	FileOutput.Write(CompressionMethod); //compression: Oodle 
+	FileOutput.Write(CompressionMethod); //compression
 	FileOutput.Write<uint32_t>(UsmapData.size()); //compressed size
 	FileOutput.Write<uint32_t>(Buffer.Size()); //decompressed size
 

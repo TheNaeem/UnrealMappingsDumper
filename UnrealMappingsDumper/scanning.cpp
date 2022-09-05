@@ -47,3 +47,5 @@ uintptr_t StringRefScanObject<T>::TryFind()
 
 template struct StringRefScanObject<std::string>;
 template struct StringRefScanObject<std::wstring>;
+template struct StringRefScanObject<const char*>;
+template struct StringRefScanObject<const wchar_t*>;

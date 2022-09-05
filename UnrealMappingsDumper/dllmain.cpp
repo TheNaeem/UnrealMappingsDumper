@@ -2,27 +2,48 @@
 
 #include "app.h"
 
-void WINAPI Main()
+#define CLEANUP() \
+	delete App; \
+	FreeLibraryAndExitThread(Module, NULL); \
+
+constexpr bool OpenConsole = true;
+
+void WINAPI Main(HMODULE Module)
 {
+	if constexpr (OpenConsole)
+	{
+		AllocConsole();
+		FILE* f;
+		freopen_s(&f, "CONOUT$", "w", stdout);
+	}
+
 	UE_LOG("Unreal Mappings Dumper created by OutTheShade");
 
-	auto App = CreateAppInstance(EUnrealVersion::UE5);
+	auto App = CreateAppInstance(EUnrealVersion::UE5); // TODO: a way to determine the engine version at runtime
 
 	if (!App)
 	{
 		UE_LOG("Couldn't instantiate dumper instance. Returning.");
+		CLEANUP();
 		return;
 	}
 
 	if (!App->Init())
 	{
 		UE_LOG("Failed to initialize the dumper. Returning.");
+		CLEANUP();
 		return;
 	}
 
+	auto Start = std::chrono::steady_clock::now();
+
 	App->Run();
 
-	delete App;
+	auto End = std::chrono::steady_clock::now();
+
+	UE_LOG("Successfully generated mappings file in %.02f ms", (End - Start).count() / 1000000.);
+
+	CLEANUP();
 }
 
 BOOL APIENTRY DllMain(

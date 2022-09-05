@@ -5,15 +5,7 @@ struct IScanObject
 	virtual uintptr_t TryFind() = 0;
 };
 
-struct ScanObject : public IScanObject
-{
-	uintptr_t TryFind() override
-	{
-		return 0;
-	}
-};
-
-struct PatternScanObject : public ScanObject
+struct PatternScanObject : public IScanObject
 {
 	PatternScanObject(
 		std::string sig,
@@ -37,7 +29,7 @@ struct PatternScanObject : public ScanObject
 };
 
 template <typename StrType = std::wstring>
-struct StringRefScanObject : public ScanObject
+struct StringRefScanObject : public IScanObject
 {
 	StringRefScanObject(
 		StrType stringRef,

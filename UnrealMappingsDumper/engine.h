@@ -301,6 +301,12 @@ public:
 		}
 	};
 
+	class FStructBaseChain
+	{
+		FStructBaseChain** StructBaseChainArray;
+		int32_t NumStructBasesInChainMinusOne;
+	};
+
 	class UEnum : public UField
 	{
 	public:
@@ -325,7 +331,7 @@ public:
 		}
 	};
 
-	class UStruct : public UField
+	class UStruct : public UField, FStructBaseChain
 	{
 	private:
 
@@ -437,7 +443,8 @@ public:
 
 public:
 
-	static std::initializer_list<ScanObject> GetGObjectsPatterns();
+	static std::vector<std::shared_ptr<IScanObject>> GetFNameStringPattrns();
+	static std::vector<std::shared_ptr<IScanObject>> GetGObjectsPatterns();
 
 	template <typename T>
 	static FORCEINLINE UClass* StaticClass()
