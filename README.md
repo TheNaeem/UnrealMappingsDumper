@@ -1,6 +1,6 @@
 # UnrealMappingsDumper
 
-This is a project which will generate mappings files for UE which will be necassaru for almost all future UE5 games in order to read data from the game files.
+This is a project which will generate mappings files for UE which will be necassary for almost all future UE5 games in order to read data from the game files.
 
 Be sure to check the [Mappings Archive](https://github.com/OutTheShade/Unreal-Mappings-Archive) if the mappings for your game has already been dumped before. 
 
