@@ -4,6 +4,7 @@
 #include "unrealFunctions.h"
 #include "app.h"
 #include "writer.h"
+#include "oodle.h"
 
 template <typename Engine>
 bool Dumper<Engine>::Init(uintptr_t GObjectsOverride, uintptr_t FNameToStringOverride)
@@ -235,9 +236,13 @@ void Dumper<Engine>::Run(ECompressionMethod CompressionMethod) const
 
 	std::vector<uint8_t> UsmapData;
 
-	switch (CompressionMethod) // TODO: more compression methods
+	switch (CompressionMethod) 
 	{
-		case ECompressionMethod::None:
+		case ECompressionMethod::Oodle:
+		{
+			UsmapData = Oodle::Compress(Buffer.GetBuffer());
+			break;
+		}
 		default:
 		{
 			std::string UncompressedStream = Buffer.GetBuffer().str();

@@ -37,7 +37,7 @@ void WINAPI Main(HMODULE Module)
 
 	auto Start = std::chrono::steady_clock::now();
 
-	App->Run();
+	App->Run(ECompressionMethod::Oodle);
 
 	auto End = std::chrono::steady_clock::now();
 

@@ -153,6 +153,7 @@
     <ClInclude Include="dumper.h" />
     <ClInclude Include="engine.h" />
     <ClInclude Include="framework.h" />
+    <ClInclude Include="oodle.h" />
     <ClInclude Include="pch.h" />
     <ClInclude Include="scanning.h" />
     <ClInclude Include="unrealEnums.h" />

@@ -9,4 +9,5 @@
 #include <functional>
 #include <sstream>
 #include <vector>
+#include <filesystem>
 #include "../Dependencies/parallel_hashmap/phmap.h"
