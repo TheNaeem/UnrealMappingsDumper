@@ -135,6 +135,8 @@ EPropertyType DefaultEngine<T>::FProperty::GetPropertyType()
 			
 			return EPropertyType::ByteProperty;
 		}
+		case CASTCLASS_FMulticastDelegateProperty:
+		case CASTCLASS_FMulticastInlineDelegateProperty:
 		case CASTCLASS_FMulticastSparseDelegateProperty:
 		{
 			return EPropertyType::MulticastDelegateProperty;
