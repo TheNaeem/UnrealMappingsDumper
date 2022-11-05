@@ -1,6 +1,7 @@
 #pragma once
 
 #define WIN32_LEAN_AND_MEAN             // Exclude rarely-used stuff from Windows headers
+#define _SILENCE_CXX23_ALIGNED_STORAGE_DEPRECATION_WARNING
 // Windows Header Files
 #include <windows.h>
 #include <stdio.h>

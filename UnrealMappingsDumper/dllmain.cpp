@@ -19,7 +19,7 @@ void WINAPI Main(HMODULE Module)
 
 	UE_LOG("Unreal Mappings Dumper created by OutTheShade");
 
-	auto App = CreateAppInstance(EUnrealVersion::UE5); // TODO: a way to determine the engine version at runtime
+	auto App = CreateAppInstance(EUnrealVersion::UE5_01); // TODO: a way to determine the engine version at runtime
 	 
 	if (!App) 
 	{

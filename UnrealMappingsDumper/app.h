@@ -7,7 +7,8 @@ enum class EUnrealVersion
 	UE4_26,
 	UE4_27,
 	UE5,
-	UE5_01
+	UE5_01,
+	FORTNITE
 };
 
 IDumper* CreateAppInstance(EUnrealVersion Version);
