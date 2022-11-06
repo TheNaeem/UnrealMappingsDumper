@@ -159,6 +159,10 @@ EPropertyType DefaultEngine<T>::FProperty::GetPropertyType()
 		{
 			return EPropertyType::SetProperty;
 		}
+		case CASTCLASS_FFieldPathProperty:
+		{
+			return EPropertyType::FieldPathProperty;
+		}
 		default:
 		{
 			return EPropertyType::Unknown;
