@@ -228,6 +228,9 @@ std::vector<std::shared_ptr<IScanObject>> DefaultEngine<T>::GetGObjectsPatterns(
 		std::make_shared<PatternScanObject>("48 8B 05 ? ? ? ? 48 8B 0C 07 48 85 C9 74 20", 3, true),
 		std::make_shared<PatternScanObject>("48 8B 05 ? ? ? ? 48 8B 0C", 3, true),
 		std::make_shared<PatternScanObject>("48 03 ? ? ? ? ? ? ? ? ? ? 48 8B 10 48 85 D2 74 07", 3, true),
+		std::make_shared<PatternScanObject>("48 8B ? ? ? ? ? ? ? ? ? ? 4C 8B 04 C8 4D 85 C0 74 07", 3, true),
+		std::make_shared<PatternScanObject>("48 8B ? ? ? ? ? ? ? ? ? ? 48 8B 0C C8 ? ? 8B 04 ? ? 48 85 C0", 3, true),
+		std::make_shared<PatternScanObject>("48 83 C4 38 C3 48 8B D1 48 8D", 3, true),
 		
 	};
 }
