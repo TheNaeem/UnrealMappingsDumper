@@ -426,7 +426,27 @@ public:
 
 	public:
 
-		static UObject* GetObjectByIndex(int Index);
+		static UObject* GetObjectByIndex(int Index)
+		{
+			int ChunkIndex = Index / NumElementsPerChunk;
+			int WithinChunkIndex = Index % NumElementsPerChunk;
+
+			if (
+				Index < Inst->NumElements &&
+				Index >= 0 &&
+				ChunkIndex < Inst->NumChunks &&
+				Index < Inst->MaxElements
+				)
+			{
+				auto Chunk = Inst->Objects[ChunkIndex];
+
+				if (Chunk)
+					return (Chunk + WithinChunkIndex)->Object;
+			}
+
+			return nullptr;
+		}
+
 		static void ForEach(std::function<void(UObject*&)> Action);
 
 		static FORCEINLINE int Num()

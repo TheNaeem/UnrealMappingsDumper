@@ -171,28 +171,6 @@ EPropertyType DefaultEngine<T>::FProperty::GetPropertyType()
 }
 
 template <typename T>
-DefaultEngine<T>::UObject* DefaultEngine<T>::ObjObjects::GetObjectByIndex(int Index)
-{
-	int ChunkIndex = Index / NumElementsPerChunk;
-	int WithinChunkIndex = Index % NumElementsPerChunk;
-
-	if (
-		Index < Inst->NumElements &&
-		Index >= 0 &&
-		ChunkIndex < Inst->NumChunks &&
-		Index < Inst->MaxElements
-		)
-	{
-		auto Chunk = Inst->Objects[ChunkIndex];
-
-		if (Chunk)
-			return (Chunk + WithinChunkIndex)->Object;
-	}
-
-	return nullptr;
-}
-
-template <typename T>
 void DefaultEngine<T>::ObjObjects::ForEach(std::function<void(UObject*&)> Action)
 {
 	for (int i = 0; i < Num(); i++)
@@ -211,8 +189,6 @@ std::vector<std::shared_ptr<IScanObject>> DefaultEngine<T>::GetFNameStringPattrn
 	return
 	{
 		std::make_shared<PatternScanObject>("E8 ? ? ? ? 83 7D C8 00 48 8D 15 ? ? ? ? 0F 5A DE", 1, true),
-		std::make_shared<PatternScanObject>("E8 ? ? ? ? ? ? ? ? 48 8B 4C 24 ? ? 8B FD 48 85 C9", 1, true),
-		std::make_shared<PatternScanObject>("E8 ? ? ? ? ? ? ? ? BD 01 00 00 00 41 39 6E ? ? 0F 8E", 1, true),
 		std::make_shared<StringRefScanObject<std::wstring>>(
 			L"%s %s SetTimer passed a negative or zero time. The associated timer may fail to be created/fire! If using InitialStartDelayVariance, be sure it is smaller than (Time + InitialStartDelay).",
 			true, 1, true, 0xE8)
@@ -227,10 +203,7 @@ std::vector<std::shared_ptr<IScanObject>> DefaultEngine<T>::GetGObjectsPatterns(
 		std::make_shared<PatternScanObject>("48 89 05 ? ? ? ? E8 ? ? ? ? ? ? ? 0F 84", 3, true),
 		std::make_shared<PatternScanObject>("48 8B 05 ? ? ? ? 48 8B 0C 07 48 85 C9 74 20", 3, true),
 		std::make_shared<PatternScanObject>("48 8B 05 ? ? ? ? 48 8B 0C", 3, true),
-		std::make_shared<PatternScanObject>("48 03 ? ? ? ? ? ? ? ? ? ? 48 8B 10 48 85 D2 74 07", 3, true),
-		std::make_shared<PatternScanObject>("48 8B ? ? ? ? ? ? ? ? ? ? 4C 8B 04 C8 4D 85 C0 74 07", 3, true),
-		std::make_shared<PatternScanObject>("48 8B ? ? ? ? ? ? ? ? ? ? 48 8B 0C C8 ? ? 8B 04 ? ? 48 85 C0", 3, true),
-		std::make_shared<PatternScanObject>("48 83 C4 38 C3 48 8B D1 48 8D", 3, true),
+		std::make_shared<PatternScanObject>("48 03 ? ? ? ? ? ? ? ? ? ? 48 8B 10 48 85 D2 74 07", 3, true)
 		
 	};
 }
