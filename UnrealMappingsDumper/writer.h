@@ -66,46 +66,46 @@ public:
 
 class FileWriter : IBufferWriter
 {
-    FILE* m_File;
+    std::ofstream m_File;
 
 public:
 
     FileWriter(const char* FileName)
     {
-        fopen_s(&m_File, FileName, "wb");
+        m_File = std::ofstream(FileName, std::ios::binary);
     }
 
     ~FileWriter()
     {
-        std::fclose(m_File);
+        m_File.close();
     }
 
     FORCEINLINE void WriteString(std::string String) override
     {
-        std::fwrite(String.c_str(), String.length(), 1, m_File);
+        m_File.write(String.c_str(), String.length());
     }
 
     FORCEINLINE void WriteString(std::string_view String) override
     {
-        std::fwrite(String.data(), String.size(), 1, m_File);
+        m_File.write(String.data(), String.size());
     }
 
     FORCEINLINE void Write(void* Input, size_t Size) override
     {
-        std::fwrite(Input, Size, 1, m_File);
+        m_File.write(static_cast<char*>(Input), Size);
     }
 
     FORCEINLINE void Seek(int Pos, int Origin = SEEK_CUR) override
     {
-        std::fseek(m_File, Pos, Origin);
+        m_File.seekp(Pos, Origin);
     }
 
     uint32_t Size() override
     {
-        auto pos = std::ftell(m_File);
-        std::fseek(m_File, 0, SEEK_END);
-        auto ret = std::ftell(m_File);
-        std::fseek(m_File, pos, SEEK_SET);
+        auto pos = m_File.tellp();
+        Seek(0, SEEK_END);
+        auto ret = m_File.tellp();
+        Seek(pos, SEEK_SET);
         return ret;
     }
 

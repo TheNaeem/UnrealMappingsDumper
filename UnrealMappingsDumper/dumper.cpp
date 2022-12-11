@@ -1,74 +1,165 @@
 #include "pch.h"
 
 #include "dumper.h"
-#include "unrealFunctions.h"
-#include "app.h"
 #include "writer.h"
 #include "oodle.h"
 
-template <typename Engine>
-bool Dumper<Engine>::Init(uintptr_t GObjectsOverride, uintptr_t FNameToStringOverride)
+static EPropertyType GetPropertyType(FProperty* Prop)
 {
-	if (GObjectsOverride)
-		Engine::ObjObjects::SetInstance(GObjectsOverride);
-
-	if (FNameToStringOverride)
-		FNameToString = (_FNameToString)FNameToStringOverride;
-
-	if (GObjectsOverride && FNameToStringOverride)
-		return true;
-
-	uintptr_t GObjectsAddy = 0;
-
-	for (auto Scan : Engine::GetGObjectsPatterns())
+	switch (Prop->GetClass()->GetId())
 	{
-		GObjectsAddy = Scan->TryFind();
-
-		if (GObjectsAddy)
-			break;
-	}
-
-	if (!GObjectsAddy)
+	case CASTCLASS_FObjectProperty:
+	case CASTCLASS_FClassProperty:
+	case CASTCLASS_FObjectPtrProperty:
+	case CASTCLASS_FClassPtrProperty:
 	{
-		UE_LOG("Could not find the address for GObjects. Try overriding it or adding the correct sig for it.");
-		return false;
+		return EPropertyType::ObjectProperty;
 	}
-
-	Engine::ObjObjects::SetInstance(GObjectsAddy);
-
-	uintptr_t FNameStringAddy = 0;
-
-	for (auto Scan : Engine::GetFNameStringPattrns())
+	case CASTCLASS_FStructProperty:
 	{
-		FNameStringAddy = Scan->TryFind();
-
-		if (FNameStringAddy)
-			break;
+		return EPropertyType::StructProperty;
 	}
-
-	if (!FNameStringAddy)
+	case CASTCLASS_FInt8Property:
 	{
-		UE_LOG("Could not find the address for FNameToString. Try overriding it or adding the correct sig for it.");
-		return false;
+		return EPropertyType::Int8Property;
 	}
+	case CASTCLASS_FInt16Property:
+	{
+		return EPropertyType::Int16Property;
+	}
+	case CASTCLASS_FIntProperty:
+	{
+		return EPropertyType::IntProperty;
+	}
+	case CASTCLASS_FInt64Property:
+	{
+		return EPropertyType::Int16Property;
+	}
+	case CASTCLASS_FUInt16Property:
+	{
+		return EPropertyType::UInt16Property;
+	}
+	case CASTCLASS_FUInt32Property:
+	{
+		return EPropertyType::UInt32Property;
+	}
+	case CASTCLASS_FUInt64Property:
+	{
+		return EPropertyType::UInt64Property;
+	}
+	case CASTCLASS_FArrayProperty:
+	{
+		return EPropertyType::ArrayProperty;
+	}
+	case CASTCLASS_FFloatProperty:
+	{
+		return EPropertyType::FloatProperty;
+	}
+	case CASTCLASS_FDoubleProperty:
+	{
+		return EPropertyType::DoubleProperty;
+	}
+	case CASTCLASS_FBoolProperty:
+	{
+		return EPropertyType::BoolProperty;
+	}
+	case CASTCLASS_FStrProperty:
+	{
+		return EPropertyType::StrProperty;
+	}
+	case CASTCLASS_FNameProperty:
+	{
+		return EPropertyType::NameProperty;
+	}
+	case CASTCLASS_FTextProperty:
+	{
+		return EPropertyType::TextProperty;
+	}
+	case CASTCLASS_FEnumProperty:
+	{
+		return EPropertyType::EnumProperty;
+	}
+	case CASTCLASS_FInterfaceProperty:
+	{
+		return EPropertyType::InterfaceProperty;
+	}
+	case CASTCLASS_FMapProperty:
+	{
+		return EPropertyType::MapProperty;
+	}
+	case CASTCLASS_FByteProperty:
+	{
+		FByteProperty* ByteProp = static_cast<FByteProperty*>(Prop);
 
-	FNameToString = (_FNameToString)FNameStringAddy;
+		if (ByteProp->GetEnum())
+			return EPropertyType::EnumAsByteProperty;
 
-	return true;
+		return EPropertyType::ByteProperty;
+	}
+	case CASTCLASS_FMulticastDelegateProperty:
+	case CASTCLASS_FMulticastInlineDelegateProperty:
+	case CASTCLASS_FMulticastSparseDelegateProperty:
+	{
+		return EPropertyType::MulticastDelegateProperty;
+	}
+	case CASTCLASS_FDelegateProperty:
+	{
+		return EPropertyType::DelegateProperty;
+	}
+	case CASTCLASS_FSoftObjectProperty:
+	case CASTCLASS_FSoftClassProperty:
+	case CASTCLASS_FWeakObjectProperty:
+	{
+		return EPropertyType::SoftObjectProperty;
+	}
+	case CASTCLASS_FLazyObjectProperty:
+	{
+		return EPropertyType::LazyObjectProperty;
+	}
+	case CASTCLASS_FSetProperty:
+	{
+		return EPropertyType::SetProperty;
+	}
+	case CASTCLASS_FFieldPathProperty:
+	{
+		return EPropertyType::FieldPathProperty;
+	}
+	default:
+	{
+		return EPropertyType::Unknown;
+	}
+	}
 }
 
-template <typename Engine>
-void Dumper<Engine>::Run(ECompressionMethod CompressionMethod) const
+struct FPropertyData
+{
+	FProperty* Prop;
+	uint16_t Index;
+	uint8_t ArrayDim;
+	FName Name;
+	EPropertyType PropertyType;
+
+	FPropertyData(FProperty* P, int Idx) :
+		Prop(P),
+		Index(Idx),
+		ArrayDim(P->GetArrayDim()),
+		Name(P->GetFName()),
+		PropertyType(GetPropertyType(P))
+	{
+	}
+};
+
+void Dumper::Run(ECompressionMethod CompressionMethod)
 {
 	StreamWriter Buffer;
-	phmap::parallel_flat_hash_map<Engine::FName, int> NameMap;
+	phmap::parallel_flat_hash_map<FName, int> NameMap;
 
-	std::vector<class Engine::UEnum*> Enums;
-	std::vector<class Engine::UStruct*> Structs; // TODO: a better way than making this completely dynamic
+	std::vector<UEnum*> Enums;
+	std::vector<UStruct*> Structs; // TODO: a better way than making this completely dynamic
 
-	std::function<void(class Engine::FProperty*&, EPropertyType)> WritePropertyWrapper{}; // hacky.. i know
+	std::function<void(class FProperty*&, EPropertyType)> WritePropertyWrapper{}; // hacky.. i know
 
-	auto WriteProperty = [&](Engine::FProperty*& Prop, EPropertyType Type)
+	auto WriteProperty = [&](FProperty*& Prop, EPropertyType Type)
 	{
 		if (Type == EPropertyType::EnumAsByteProperty)
 			Buffer.Write(EPropertyType::EnumProperty);
@@ -76,87 +167,89 @@ void Dumper<Engine>::Run(ECompressionMethod CompressionMethod) const
 
 		switch (Type)
 		{
-			case EPropertyType::EnumProperty:
-			{
-				auto EnumProp = static_cast<Engine::FEnumProperty*>(Prop);
+		case EPropertyType::EnumProperty:
+		{
+			auto EnumProp = static_cast<FEnumProperty*>(Prop);
 
-				auto Inner = EnumProp->GetUnderlying();
-				auto InnerType = Inner->GetPropertyType();
-				WritePropertyWrapper(Inner, InnerType);
-				Buffer.Write(NameMap[EnumProp->GetEnum()->GetName()]);
+			auto Inner = EnumProp->GetUnderlying();
+			auto InnerType = GetPropertyType(Inner);
+			WritePropertyWrapper(Inner, InnerType);
+			Buffer.Write(NameMap[EnumProp->GetEnum()->GetFName()]);
 
-				break;
-			}
-			case EPropertyType::EnumAsByteProperty:
-			{
-				Buffer.Write(EPropertyType::ByteProperty);
-				Buffer.Write(NameMap[static_cast<Engine::FByteProperty*>(Prop)->GetEnum()->GetName()]);
+			break;
+		}
+		case EPropertyType::EnumAsByteProperty:
+		{
+			Buffer.Write(EPropertyType::ByteProperty);
+			Buffer.Write(NameMap[static_cast<FByteProperty*>(Prop)->GetEnum()->GetFName()]);
 
-				break;
-			}
-			case EPropertyType::StructProperty:
-			{
-				Buffer.Write(NameMap[static_cast<Engine::FStructProperty*>(Prop)->GetStruct()->GetName()]);
-				break;
-			}
-			case EPropertyType::SetProperty:
-			case EPropertyType::ArrayProperty:
-			{
-				auto Inner = static_cast<Engine::FArrayProperty*>(Prop)->GetInner();
-				auto InnerType = Inner->GetPropertyType();
-				WritePropertyWrapper(Inner, InnerType);
+			break;
+		}
+		case EPropertyType::StructProperty:
+		{
+			Buffer.Write(NameMap[static_cast<FStructProperty*>(Prop)->GetStruct()->GetFName()]);
+			break;
+		}
+		case EPropertyType::SetProperty:
+		case EPropertyType::ArrayProperty:
+		{
+			auto Inner = static_cast<FArrayProperty*>(Prop)->GetInner();
+			auto InnerType = GetPropertyType(Inner);
+			WritePropertyWrapper(Inner, InnerType);
 
-				break;
-			}
-			case EPropertyType::MapProperty:
-			{
-				auto Inner = static_cast<Engine::FMapProperty*>(Prop)->GetKey();
-				auto InnerType = Inner->GetPropertyType();
-				WritePropertyWrapper(Inner, InnerType);
+			break;
+		}
+		case EPropertyType::MapProperty:
+		{
+			auto Inner = static_cast<FMapProperty*>(Prop)->GetKey();
+			auto InnerType = GetPropertyType(Inner);
+			WritePropertyWrapper(Inner, InnerType);
 
-				auto Value = static_cast<Engine::FMapProperty*>(Prop)->GetValue();
-				auto ValueType = Value->GetPropertyType();
-				WritePropertyWrapper(Value, ValueType);
+			auto Value = static_cast<FMapProperty*>(Prop)->GetValue();
+			auto ValueType = GetPropertyType(Value);
+			WritePropertyWrapper(Value, ValueType);
 
-				break;
-			}
+			break;
+		}
 		}
 	};
 
 	WritePropertyWrapper = WriteProperty;
 
-	Engine::ObjObjects::ForEach([&](Engine::UObject*& Object)
+	ObjObjects::ForEach([&](UObject*& Object)
 		{
-			if (Object->Class() == Engine::UClass::StaticClass() ||
-				Object->Class() == Engine::UScriptStruct::StaticClass())
+			if (Object->Class() == UClass::StaticClass() ||
+			Object->Class() == UScriptStruct::StaticClass())
 			{
-				auto Struct = static_cast<Engine::UStruct*>(Object);
+				auto Struct = static_cast<UStruct*>(Object);
 
 				Structs.push_back(Struct);
-				
-				NameMap.insert_or_assign(Struct->GetName(), 0);
 
-				if (Struct->Super() && !NameMap.contains(Struct->Super()->GetName()))
-					NameMap.insert_or_assign(Struct->Super()->GetName(), 0);
+				NameMap.insert_or_assign(Struct->GetFName(), 0);
 
-				auto Props = Struct->GetProperties();
+				if (Struct->Super() && !NameMap.contains(Struct->Super()->GetFName()))
+					NameMap.insert_or_assign(Struct->Super()->GetFName(), 0);
+
+				auto Props = Struct->ChildProperties();
 
 				while (Props)
 				{
-					NameMap.insert_or_assign(Props->GetName(), 0);
-					Props = static_cast<Engine::FProperty*>(Props->GetNext());
+					NameMap.insert_or_assign(Props->GetFName(), 0);
+					Props = static_cast<FProperty*>(Props->GetNext());
 				}
 			}
-			else if (Object->Class() == Engine::UEnum::StaticClass())
+			else if (Object->Class() == UEnum::StaticClass())
 			{
-				auto Enum = static_cast<Engine::UEnum*>(Object);
+				auto Enum = static_cast<UEnum*>(Object);
 				Enums.push_back(Enum);
-				
-				NameMap.insert_or_assign(Enum->GetName(), 0);
 
-				for (auto i = 0; i < Enum->Names.Num(); i++)
+				NameMap.insert_or_assign(Enum->GetFName(), 0);
+
+				auto& EnumNames = Enum->Names();
+
+				for (auto i = 0; i < EnumNames.Num(); i++)
 				{
-					NameMap.insert_or_assign(Enum->Names[i].Key, 0);
+					NameMap.insert_or_assign(EnumNames[i].Key, 0);
 				}
 			}
 		});
@@ -188,12 +281,14 @@ void Dumper<Engine>::Run(ECompressionMethod CompressionMethod) const
 
 	for (auto Enum : Enums)
 	{
-		Buffer.Write(NameMap[Enum->GetName()]);
-		Buffer.Write<uint8_t>(Enum->Names.Num());
+		auto& EnumNames = Enum->Names();
 
-		for (size_t i = 0; i < Enum->Names.Num(); i++)
+		Buffer.Write(NameMap[Enum->GetFName()]);
+		Buffer.Write<uint8_t>(EnumNames.Num());
+
+		for (size_t i = 0; i < EnumNames.Num(); i++)
 		{
-			Buffer.Write<int>(NameMap[Enum->Names[i].Key]);
+			Buffer.Write<int>(NameMap[EnumNames[i].Key]);
 		}
 	}
 
@@ -201,12 +296,12 @@ void Dumper<Engine>::Run(ECompressionMethod CompressionMethod) const
 
 	for (auto Struct : Structs)
 	{
-		Buffer.Write(NameMap[Struct->GetName()]);
-		Buffer.Write<int32_t>(Struct->Super() ? NameMap[Struct->Super()->GetName()] : 0xffffffff);
+		Buffer.Write(NameMap[Struct->GetFName()]);
+		Buffer.Write<int32_t>(Struct->Super() ? NameMap[Struct->Super()->GetFName()] : 0xffffffff);
 
 		std::vector<FPropertyData> Properties;
 
-		auto Props = Struct->GetProperties();
+		auto Props = Struct->ChildProperties();
 		uint16_t PropCount = 0;
 		uint16_t SerializablePropCount = 0;
 
@@ -215,7 +310,7 @@ void Dumper<Engine>::Run(ECompressionMethod CompressionMethod) const
 			FPropertyData Data(Props, PropCount);
 
 			Properties.push_back(Data);
-			Props = static_cast<Engine::FProperty*>(Props->GetNext());
+			Props = static_cast<FProperty*>(Props->GetNext());
 
 			PropCount += Data.ArrayDim;
 			SerializablePropCount++;
@@ -230,25 +325,25 @@ void Dumper<Engine>::Run(ECompressionMethod CompressionMethod) const
 			Buffer.Write(P.ArrayDim);
 			Buffer.Write(NameMap[P.Name]);
 
-			WriteProperty(P.Prop, P.Type);
+			WriteProperty(P.Prop, P.PropertyType);
 		}
 	}
 
 	std::vector<uint8_t> UsmapData;
 
-	switch (CompressionMethod) 
+	switch (CompressionMethod)
 	{
-		case ECompressionMethod::Oodle:
-		{
-			UsmapData = Oodle::Compress(Buffer.GetBuffer());
-			break;
-		}
-		default:
-		{
-			std::string UncompressedStream = Buffer.GetBuffer().str();
-			UsmapData.resize(UncompressedStream.size());
-			memcpy(UsmapData.data(), UncompressedStream.data(), UsmapData.size());
-		}
+	case ECompressionMethod::Oodle:
+	{
+		UsmapData = Oodle::Compress(Buffer.GetBuffer());
+		break;
+	}
+	default:
+	{
+		std::string UncompressedStream = Buffer.GetBuffer().str();
+		UsmapData.resize(UncompressedStream.size());
+		memcpy(UsmapData.data(), UncompressedStream.data(), UsmapData.size());
+	}
 	}
 
 	auto FileOutput = FileWriter("Mappings.usmap");
@@ -261,7 +356,3 @@ void Dumper<Engine>::Run(ECompressionMethod CompressionMethod) const
 
 	FileOutput.Write(UsmapData.data(), UsmapData.size());
 }
-
-template class Dumper<DefaultEngine<>>;
-template class Dumper<Engine_Fortnite>;
-template class Dumper<Engine_UE5>;

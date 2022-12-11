@@ -1,10 +1,7 @@
 #include "pch.h"
 
 #include "app.h"
-
-#define CLEANUP() \
-	delete App; \
-	FreeLibraryAndExitThread(Module, NULL); \
+#include "dumper.h"
 
 constexpr bool OpenConsole = true;
 
@@ -19,31 +16,22 @@ void WINAPI Main(HMODULE Module)
 
 	UE_LOG("Unreal Mappings Dumper created by OutTheShade");
 
-	auto App = CreateAppInstance(EUnrealVersion::UE5_01); // TODO: a way to determine the engine version at runtime
-	 
-	if (!App) 
-	{
-		UE_LOG("Couldn't instantiate dumper instance. Returning.");
-		CLEANUP();
-		return;
-	}
-
-	if (!App->Init())
+	if (!App::Init())
 	{
 		UE_LOG("Failed to initialize the dumper. Returning.");
-		CLEANUP();
+		FreeLibraryAndExitThread(Module, NULL);
 		return;
 	}
 
 	auto Start = std::chrono::steady_clock::now();
 
-	App->Run(ECompressionMethod::None);
+	Dumper::Run(ECompressionMethod::None);
 
 	auto End = std::chrono::steady_clock::now();
 
 	UE_LOG("Successfully generated mappings file in %.02f ms", (End - Start).count() / 1000000.);
 
-	CLEANUP();
+	FreeLibraryAndExitThread(Module, NULL);
 }
 
 BOOL APIENTRY DllMain(

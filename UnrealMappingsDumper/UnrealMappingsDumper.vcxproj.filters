@@ -48,12 +48,6 @@
     <ClInclude Include="dumper.h">
       <Filter>Core\Dumper</Filter>
     </ClInclude>
-    <ClInclude Include="engine.h">
-      <Filter>Core\Engine</Filter>
-    </ClInclude>
-    <ClInclude Include="uobjectDependency.h">
-      <Filter>Core\Engine</Filter>
-    </ClInclude>
     <ClInclude Include="unrealEnums.h">
       <Filter>Core\Engine</Filter>
     </ClInclude>
@@ -72,6 +66,12 @@
     <ClInclude Include="oodle.h">
       <Filter>Core\Compression</Filter>
     </ClInclude>
+    <ClInclude Include="unrealTypes.h">
+      <Filter>Core\Engine</Filter>
+    </ClInclude>
+    <ClInclude Include="unrealVersion.h">
+      <Filter>Core\Engine</Filter>
+    </ClInclude>
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="dllmain.cpp">
@@ -83,14 +83,14 @@
     <ClCompile Include="app.cpp">
       <Filter>Core\App</Filter>
     </ClCompile>
-    <ClCompile Include="engine.cpp">
-      <Filter>Core\Engine</Filter>
-    </ClCompile>
     <ClCompile Include="scanning.cpp">
       <Filter>Core\Scanning</Filter>
     </ClCompile>
     <ClCompile Include="dumper.cpp">
       <Filter>Core\Dumper</Filter>
+    </ClCompile>
+    <ClCompile Include="unrealVersion.cpp">
+      <Filter>Core\Engine</Filter>
     </ClCompile>
   </ItemGroup>
 </Project>

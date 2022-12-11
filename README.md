@@ -26,7 +26,7 @@ The source code relies a lot on the power of templates in order to make overridi
 
 ## Plans
 
-> Deducing engine version at runtime.
+> GPackageFileUEVersion support.
 
 > More compression methods.
 
