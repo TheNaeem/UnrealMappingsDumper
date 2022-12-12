@@ -7,7 +7,7 @@
 #include "unrealEnums.h"
 #include "unrealFunctions.h"
 
-#define QUICK_OFFSET(type, offset) *(type*)((uintptr_t)this + offset)
+#define QUICK_OFFSET(type, offset) (*(type*)((uintptr_t)this + offset))
 
 #define DECLARE_STATIC_CLASS(PATH) \
     static FORCEINLINE class UClass* StaticClass() \
@@ -21,11 +21,20 @@ class FName
 private:
 
 	uint32_t Number = 0;
-	uint32_t Padding;
+	uint32_t Padding = 0;
 
 public:
 
 	static inline bool IsOptimized = false;
+
+	__forceinline FName(int InNum) : Number(InNum), Padding(0)
+	{
+	}
+
+	__forceinline static std::string GetString(int Number)
+	{
+		return FName(Number).ToString();
+	}
 
 	__forceinline uint32_t GetNumber()
 	{
@@ -34,7 +43,7 @@ public:
 
 	bool operator== (FName n) const
 	{
-		return n.Number == n.Number;
+		return Number == n.Number;
 	}
 
 	friend size_t hash_value(const FName& p)
@@ -98,7 +107,7 @@ public:
 		return Name.AsString();
 	}
 
-	FORCEINLINE FName& GetFName()
+	FORCEINLINE FName GetFName()
 	{
 		return QUICK_OFFSET(FName, NameOffset);
 	}
@@ -287,7 +296,7 @@ class FFieldClass
 
 public:
 
-	FORCEINLINE FName& GetFName()
+	FORCEINLINE FName GetFName()
 	{
 		return Name;
 	}
@@ -373,7 +382,7 @@ public:
 	{
 		if (FName::IsOptimized)
 		{
-			return QUICK_OFFSET(int32_t, sizeof(FField) - 4);
+			return QUICK_OFFSET(int32_t, sizeof(FField) - 8);
 		}
 
 		return ArrayDim;
@@ -384,12 +393,13 @@ class UEnum : public UObject
 {
 public:
 
-	TArray<TPair<FName, int64_t>>& Names()
-	{
-		static auto FieldSize = ObjObjects::FindObjectByName<UStruct>(L"Field")->PropertiesSize();
+	typedef TArray<TPair<FName, int64_t>> EnumNameMap;
 
-		return *(TArray<TPair<FName, int64_t>>*)
-			& QUICK_OFFSET(uint8_t, FieldSize + sizeof(FString));
+	EnumNameMap& Names()
+	{
+		static auto FieldSize = ObjObjects::FindObject<UStruct>(L"/Script/CoreUObject.Field")->PropertiesSize();
+
+		return QUICK_OFFSET(EnumNameMap, FieldSize + sizeof(FString));
 	}
 
 	DECLARE_STATIC_CLASS(L"/Script/CoreUObject.Enum");

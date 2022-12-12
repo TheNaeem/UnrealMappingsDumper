@@ -249,7 +249,7 @@ void Dumper::Run(ECompressionMethod CompressionMethod)
 
 				for (auto i = 0; i < EnumNames.Num(); i++)
 				{
-					NameMap.insert_or_assign(EnumNames[i].Key, 0);
+					NameMap.insert_or_assign(EnumNames[i].Key.GetNumber(), 0);
 				}
 			}
 		});
@@ -258,7 +258,7 @@ void Dumper::Run(ECompressionMethod CompressionMethod)
 
 	int CurrentNameIndex = 0;
 
-	for (auto N : NameMap)
+	for (auto&& N : NameMap)
 	{
 		NameMap[N.first] = CurrentNameIndex;
 
@@ -281,9 +281,9 @@ void Dumper::Run(ECompressionMethod CompressionMethod)
 
 	for (auto Enum : Enums)
 	{
-		auto& EnumNames = Enum->Names();
-
 		Buffer.Write(NameMap[Enum->GetFName()]);
+
+		auto& EnumNames = Enum->Names();
 		Buffer.Write<uint8_t>(EnumNames.Num());
 
 		for (size_t i = 0; i < EnumNames.Num(); i++)
