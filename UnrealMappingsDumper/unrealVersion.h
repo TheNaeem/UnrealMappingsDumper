@@ -109,6 +109,8 @@ struct UnrealVersionBase : IUnrealVersion
 		return
 		{
 			std::make_shared<PatternScanObject>("E8 ? ? ? ? 83 7D C8 00 48 8D 15 ? ? ? ? 0F 5A DE", 1, true),
+			std::make_shared<PatternScanObject>("E8 ? ? ? ? 48 8B 4C 24 ? 8B FD 48 85 C9", 1, true),// 4.12 - 5.0 EA
+			std::make_shared<PatternScanObject>("E8 ? ? ? ? BD 01 00 00 00 41 39 6E ? 0F 8E", 1, true),// 4.25+ Backup
 			std::make_shared<StringRefScanObject<std::wstring>>(
 				L"%s %s SetTimer passed a negative or zero time. The associated timer may fail to be created/fire! If using InitialStartDelayVariance, be sure it is smaller than (Time + InitialStartDelay).",
 				true, 1, true, 0xE8)

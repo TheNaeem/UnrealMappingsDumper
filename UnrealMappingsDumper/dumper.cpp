@@ -108,9 +108,12 @@ static EPropertyType GetPropertyType(FProperty* Prop)
 	}
 	case CASTCLASS_FSoftObjectProperty:
 	case CASTCLASS_FSoftClassProperty:
-	case CASTCLASS_FWeakObjectProperty:
 	{
 		return EPropertyType::SoftObjectProperty;
+	}
+	case CASTCLASS_FWeakObjectProperty:
+	{
+		return EPropertyType::WeakObjectProperty;
 	}
 	case CASTCLASS_FLazyObjectProperty:
 	{
