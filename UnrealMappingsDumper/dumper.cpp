@@ -33,7 +33,7 @@ static EPropertyType GetPropertyType(FProperty* Prop)
 	}
 	case CASTCLASS_FInt64Property:
 	{
-		return EPropertyType::Int16Property;
+		return EPropertyType::Int64Property;
 	}
 	case CASTCLASS_FUInt16Property:
 	{
