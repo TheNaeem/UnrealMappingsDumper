@@ -33,7 +33,7 @@ static EPropertyType GetPropertyType(FProperty* Prop)
 	}
 	case CASTCLASS_FInt64Property:
 	{
-		return EPropertyType::Int16Property;
+		return EPropertyType::Int64Property;
 	}
 	case CASTCLASS_FUInt16Property:
 	{
@@ -108,9 +108,12 @@ static EPropertyType GetPropertyType(FProperty* Prop)
 	}
 	case CASTCLASS_FSoftObjectProperty:
 	case CASTCLASS_FSoftClassProperty:
-	case CASTCLASS_FWeakObjectProperty:
 	{
 		return EPropertyType::SoftObjectProperty;
+	}
+	case CASTCLASS_FWeakObjectProperty:
+	{
+		return EPropertyType::WeakObjectProperty;
 	}
 	case CASTCLASS_FLazyObjectProperty:
 	{
